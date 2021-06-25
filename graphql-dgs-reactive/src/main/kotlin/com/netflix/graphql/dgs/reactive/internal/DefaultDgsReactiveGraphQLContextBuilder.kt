@@ -19,6 +19,7 @@ package com.netflix.graphql.dgs.reactive.internal
 import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsRequestData
 import com.netflix.graphql.dgs.reactive.DgsReactiveCustomContextBuilderWithRequest
+import com.netflix.graphql.dgs.reactive.ReactiveDgsContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -33,30 +34,28 @@ open class DefaultDgsReactiveGraphQLContextBuilder(
 ) {
     val logger: Logger = LoggerFactory.getLogger(DefaultDgsReactiveGraphQLContextBuilder::class.java)
 
-    fun build(dgsRequestData: DgsReactiveRequestData?): Mono<DgsContext> {
-        val customContext = if (dgsReactiveCustomContextBuilderWithRequest.isPresent) {
+    fun build(dgsRequestData: DgsReactiveRequestData?): Mono<out DgsContext> {
+        return if (dgsReactiveCustomContextBuilderWithRequest.isPresent) {
             dgsReactiveCustomContextBuilderWithRequest.get().build(
                 dgsRequestData?.extensions ?: mapOf(),
-                HttpHeaders.readOnlyHttpHeaders(
-                    dgsRequestData?.headers
-                        ?: HttpHeaders()
-                ),
+                HttpHeaders.readOnlyHttpHeaders(dgsRequestData?.headers ?: HttpHeaders()),
                 dgsRequestData?.serverRequest
-            )
-        } else Mono.empty()
+            ).flatMap { customContext -> buildReactiveContext(customContext, dgsRequestData) }
+        } else {
+            buildReactiveContext(null, dgsRequestData)
+        }
+    }
 
-        return customContext.flatMap {
+    private fun buildReactiveContext(customContext: Any?, dgsRequestData: DgsReactiveRequestData?): Mono<ReactiveDgsContext> {
+        return Mono.deferContextual { context ->
             Mono.just(
-                DgsContext(
-                    it,
-                    dgsRequestData
+                ReactiveDgsContext(
+                    customContext = customContext,
+                    monoContext = context,
+                    requestData = dgsRequestData
                 )
             )
-        }.defaultIfEmpty(
-            DgsContext(
-                requestData = dgsRequestData
-            )
-        )
+        }
     }
 }
 
