@@ -51,7 +51,7 @@ open class DefaultDgsReactiveGraphQLContextBuilder(
             Mono.just(
                 ReactiveDgsContext(
                     customContext = customContext,
-                    monoContext = context,
+                    reactorContext = context,
                     requestData = dgsRequestData
                 )
             )

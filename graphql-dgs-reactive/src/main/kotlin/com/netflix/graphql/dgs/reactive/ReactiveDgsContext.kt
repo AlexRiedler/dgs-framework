@@ -20,4 +20,4 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsRequestData
 import reactor.util.context.ContextView
 
-open class ReactiveDgsContext(customContext: Any? = null, val monoContext: ContextView, requestData: DgsRequestData?) : DgsContext(customContext, requestData)
+open class ReactiveDgsContext(customContext: Any? = null, val reactorContext: ContextView, requestData: DgsRequestData?) : DgsContext(customContext, requestData)

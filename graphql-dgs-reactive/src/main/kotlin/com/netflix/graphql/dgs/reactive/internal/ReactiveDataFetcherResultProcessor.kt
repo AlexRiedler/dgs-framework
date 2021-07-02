@@ -33,7 +33,7 @@ class MonoDataFetcherResultProcessor : DataFetcherResultProcessor {
             val dgsContext = dfe.getDgsContext()
 
             return if (dgsContext is ReactiveDgsContext) {
-                originalResult.contextWrite(dgsContext.monoContext).toFuture()
+                originalResult.contextWrite(dgsContext.reactorContext).toFuture()
             } else {
                 originalResult.toFuture()
             }
@@ -53,7 +53,7 @@ class FluxDataFetcherResultProcessor : DataFetcherResultProcessor {
             val dgsContext = dfe.getDgsContext()
 
             return if (dgsContext is ReactiveDgsContext) {
-                originalResult.contextWrite(dgsContext.monoContext).collectList().toFuture()
+                originalResult.contextWrite(dgsContext.reactorContext).collectList().toFuture()
             } else {
                 originalResult.collectList().toFuture()
             }
